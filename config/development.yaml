@@ -1,0 +1,15 @@
+consumer:
+  host: localhost
+  username: fiubrother
+  password: alwayswatching
+  queue: detection_frames
+publisher:
+  host: localhost
+  username: fiubrother
+  password: alwayswatching
+  exchange: fiubrother
+  routing_key: detected_faces
+face_detector:
+  type: 'movidius_ssd'
+  movidius_id: 0
+  longrange: 1

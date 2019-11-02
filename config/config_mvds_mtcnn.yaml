@@ -1,0 +1,4 @@
+face_detector:
+  type: 'movidius_mtcnn'
+  movidius_id_pnet: 0
+  movidius_id_onet: 0

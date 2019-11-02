@@ -1,0 +1,3 @@
+big-fiubrother-core
+opencv-python
+numpy
