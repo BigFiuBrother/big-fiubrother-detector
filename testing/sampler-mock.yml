@@ -1,0 +1,11 @@
+publisher:
+  host: localhost
+  username: fiubrother
+  password: alwayswatching
+  exchange: fiubrother
+  routing_key: detection_frames
+db:
+  host: localhost
+  database: big_fiubrother
+  username: postgres
+  password: password

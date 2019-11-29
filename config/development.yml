@@ -1,0 +1,30 @@
+consumer:
+  host: localhost
+  username: fiubrother
+  password: alwayswatching
+  queue: detection_frames
+
+face_detector:
+  face_detector:
+    type: 'movidius_ssd'
+    movidius_id: 0
+    longrange: 0
+  db:
+    host: localhost
+    database: big_fiubrother
+    username: postgres
+    password: password
+
+publisher_to_classifier:
+  host: localhost
+  username: fiubrother
+  password: alwayswatching
+  exchange: fiubrother
+  routing_key: detected_faces
+
+publisher_to_scheduler:
+  host: localhost
+  username: fiubrother
+  password: alwayswatching
+  exchange: fiubrother
+  routing_key: scheduler
