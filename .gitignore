@@ -2,3 +2,4 @@
 .idea
 *.jpg
 */output/*
+log/*
