@@ -39,19 +39,24 @@ if __name__ == "__main__":
 
     print('[*] Configuration finished. Starting big-fiubrother-detector!')
 
+    # Start worker threads
     detector_thread.start()
     publisher_to_classifier_thread.start()
     publisher_to_scheduler_thread.start()
+
+    # Start consumer on main thread
     consumer.init()
     consumer.execute()
 
     # Signal Handled STOP
     consumer.close()
 
+    # Stop worker threads
     detector_thread.stop()
     publisher_to_classifier_thread.stop()
     publisher_to_scheduler_thread.stop()
 
+    # Wait for worker threads
     detector_thread.wait()
     publisher_to_classifier_thread.wait()
     publisher_to_scheduler_thread.wait()
