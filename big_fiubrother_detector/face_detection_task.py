@@ -6,12 +6,22 @@ from big_fiubrother_core.db import (
 from big_fiubrother_core.messages import (
     FrameMessage,
     FaceEmbeddingMessage,
-    ProcessedFrameMessage
+    AnalyzedVideoChunkMessage
 )
 from big_fiubrother_detector.face_detector_factory import FaceDetectorFactory
 import cv2
 import numpy as np
 from big_fiubrother_core.synchronization import ProcessSynchronizer
+import logging
+
+def drawBoxes(im, boxes, color):
+    x1 = [i[0] for i in boxes]
+    y1 = [i[1] for i in boxes]
+    x2 = [i[2] for i in boxes]
+    y2 = [i[3] for i in boxes]
+    for i in range(len(boxes)):
+        cv2.rectangle(im, (int(x1[i]), int(y1[i])), (int(x2[i]), int(y2[i])), color, 1)
+    return im
 
 
 class FaceDetectionTask(QueueTask):
@@ -48,10 +58,17 @@ class FaceDetectionTask(QueueTask):
         frame = cv2.imdecode(np.frombuffer(frame_bytes, np.uint8), cv2.IMREAD_COLOR)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
+        # Print frame
+        cv2.imshow("asd", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+        cv2.waitKey(1)
+
         # Detect faces
-        #print("- Performing detection - frame_id: " + str(frame_id))
-        #rects = []
+        print("- Performing detection - frame_id: " + str(frame_id) + " - video chunk id: " + str(video_chunk_id))
+        logging.debug("- Performing detection - frame_id: " + str(frame_id) + " - video chunk id: " + str(video_chunk_id))
+
+        rects = []
         rects = self.face_detector.detect_face_image(frame)
+        #
 
         if len(rects) > 0:
 
@@ -81,6 +98,13 @@ class FaceDetectionTask(QueueTask):
                 #cv2.imshow("asd", cv2.cvtColor(cropped_face, cv2.COLOR_RGB2BGR))
                 #cv2.waitKey(1)
 
+                logging.debug("- Found face, assigned id: " + str(face.id) + " - video chunk id: " + str(video_chunk_id))
+                print("- Found face, assigned id: " + str(face.id) + " - video chunk id: " + str(video_chunk_id))
+
+                # Print face with rect
+                #cv2.imshow("asd", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
+                # cv2.waitKey(1)
+
                 # Queue face embedding job
                 face_embedding_message = FaceEmbeddingMessage(video_chunk_id, face.id, cropped_face)
                 self.output_queue_to_classifier.put(face_embedding_message)
@@ -88,11 +112,14 @@ class FaceDetectionTask(QueueTask):
         else:
 
             # Frame task sync completion
-            self.process_synchronizer.complete_frame_task(
+            should_notify_scheduler = self.process_synchronizer.complete_frame_task(
                 video_chunk_id,
                 frame_id
             )
 
-            # Notify scheduler of frame analysis completion
-            processed_frame_message = ProcessedFrameMessage(video_chunk_id)
-            self.output_queue_to_scheduler.put(processed_frame_message)
+            if should_notify_scheduler:
+                print("- Notifying interpolator of video chunk analysis completion, video chunk id: " + str(video_chunk_id))
+                logging.debug("- Notifying interpolator of video chunk analysis completion, video chunk id: " + str(video_chunk_id))
+                # Notify scheduler of video chunk analysis completion
+                scheduler_notification = AnalyzedVideoChunkMessage(video_chunk_id)
+                self.output_queue_to_scheduler.put(scheduler_notification)
